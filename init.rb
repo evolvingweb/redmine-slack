@@ -1,22 +1,21 @@
 require 'redmine'
 
 # Tell Zeitwerk to ignore this plugin's lib directory
-plugin_lib = File.join(File.dirname(__FILE__), 'lib')
-Rails.autoloaders.each { |loader| loader.ignore(plugin_lib) }
-
-# Require plugin files
-require File.join(plugin_lib, 'redmine_slack/listener')
-require File.join(plugin_lib, 'redmine_slack/issue_patch')
-
+# R7: no loader.ignore / manual require — RedmineSlack::Listener (a
+# Redmine::Hook::Listener) self-registers and RedmineSlack::IssuePatch autoloads via
+# Zeitwerk. NOTE: the listener needs the `httpclient` gem (see the plugin Gemfile);
+# 2.9.0+ carries the mutex_m/webrick deps Ruby 3.4 requires. It is only lightly
+# maintained upstream (last release Feb 2025) — re-check before any Ruby 4.0 move.
+# refs #108530.
 Redmine::Plugin.register :redmine_slack do
   name 'Redmine Slack'
   author 'Samuel Cormier-Iijima'
   url 'https://github.com/sciyoshi/redmine-slack'
   author_url 'http://www.sciyoshi.com'
   description 'Slack chat integration'
-  version '6.0.0'
+  version '7.0.0'
 
-  requires_redmine :version_or_higher => '0.8.0'
+  requires_redmine :version_or_higher => '7.0.0'
 
   settings \
     :default => {
